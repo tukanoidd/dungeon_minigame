@@ -25,10 +25,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/game_p3.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="425">
-              <caret line="135" column="30" selection-start-line="135" selection-start-column="30" selection-end-line="135" selection-end-column="30" />
+            <state relative-caret-position="447">
+              <caret line="458" column="62" selection-start-line="458" selection-start-column="62" selection-end-line="458" selection-end-column="62" />
               <folding>
-                <element signature="n#!!block;n#addPlayerAnims#0" />
+                <element signature="e#8506#8690#0" />
+                <element signature="e#8715#8898#0" />
+                <element signature="e#8923#9107#0" />
+                <element signature="e#9132#9317#0" />
+                <element signature="e#9342#9528#0" />
+                <element signature="e#9553#9740#0" />
               </folding>
             </state>
           </provider>
@@ -56,7 +61,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>anims</find>
       <find>gameState</find>
       <find>window.innerWidth</find>
       <find>scale</find>
@@ -86,6 +90,7 @@
       <find>layers</find>
       <find>leversLayers</find>
       <find>third</find>
+      <find>reset</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -110,7 +115,7 @@
     <auto-save>true</auto-save>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-10" />
+    <option name="x" value="950" />
     <option name="width" value="980" />
     <option name="height" value="1040" />
   </component>
@@ -119,6 +124,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -140,13 +146,12 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../Tools ID/ID" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../Tools ID/Max/ID" />
     <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
@@ -207,18 +212,23 @@
       <workItem from="1559046830792" duration="3357000" />
       <workItem from="1559252380703" duration="873000" />
       <workItem from="1559326417061" duration="4436000" />
-      <workItem from="1559340894375" duration="10788000" />
+      <workItem from="1559340894375" duration="11388000" />
+      <workItem from="1559478342761" duration="619000" />
+      <workItem from="1559480820556" duration="1482000" />
+      <workItem from="1559501323547" duration="21000" />
+      <workItem from="1559502409218" duration="7378000" />
+      <workItem from="1559574380780" duration="2467000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="88611000" />
+    <option name="totallyTimeSpent" value="101178000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12214765" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.020134227" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="DB Browser" order="2" />
       <window_info id="Favorites" order="3" side_tool="true" />
@@ -306,10 +316,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/game_p3.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="135" column="30" selection-start-line="135" selection-start-column="30" selection-end-line="135" selection-end-column="30" />
+        <state relative-caret-position="447">
+          <caret line="458" column="62" selection-start-line="458" selection-start-column="62" selection-end-line="458" selection-end-column="62" />
           <folding>
-            <element signature="n#!!block;n#addPlayerAnims#0" />
+            <element signature="e#8506#8690#0" />
+            <element signature="e#8715#8898#0" />
+            <element signature="e#8923#9107#0" />
+            <element signature="e#9132#9317#0" />
+            <element signature="e#9342#9528#0" />
+            <element signature="e#9553#9740#0" />
           </folding>
         </state>
       </provider>

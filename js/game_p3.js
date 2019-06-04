@@ -28,6 +28,10 @@ var playerProps = {
             x: 48,
             y: 864
         }
+    },
+    'anims': {
+        'default': '',
+        'present': ''
     }
 };
 
@@ -101,6 +105,30 @@ function preload() {
     this.load.spritesheet(
         'player',
         'assets/player_spritesheet.png',
+        {
+            frameWidth: 50,
+            frameHeight: 37
+        }
+    );
+    this.load.spritesheet(
+        'player_jump',
+        'assets/player_spritesheet_boots.png',
+        {
+            frameWidth: 50,
+            frameHeight: 37
+        }
+    );
+    this.load.spritesheet(
+        'player_jump_fall',
+        'assets/player_spritesheet_boots_cape.png',
+        {
+            frameWidth: 50,
+            frameHeight: 37
+        }
+    );
+    this.load.spritesheet(
+        'player_jump_fall_climb',
+        'assets/player_spritesheet_boots_cape_gauntlets.png',
         {
             frameWidth: 50,
             frameHeight: 37
@@ -190,13 +218,13 @@ function tpDoor(player, tile) {
 function grabPotion(player, tile, game) {
     if (tile.x === mapStuffCoordsLinks.potions.jump.coords.x && tile.y === mapStuffCoordsLinks.potions.jump.coords.y) {
         playerProps.speeds.jumpSpeed += mapStuffCoordsLinks.potions.jump.boost;
-        //draw img
+        playerProps.anims.present = '_boots';
     } else if (tile.x === mapStuffCoordsLinks.potions.fall.coords.x && tile.y === mapStuffCoordsLinks.potions.fall.coords.y) {
         game.physics.world.gravity.y += mapStuffCoordsLinks.potions.fall.boost;
-        //draw img
+        playerProps.anims.present = '_boots_cape';
     } else if (tile.x === mapStuffCoordsLinks.potions.climb.coords.x && tile.y === mapStuffCoordsLinks.potions.climb.coords.y) {
         playerProps.speeds.climbSpeed += mapStuffCoordsLinks.potions.climb.boost;
-        //draw img
+        playerProps.anims.present = '_boots_cape_gauntlets';
     }
 
     layers.potionLayer.removeTileAt(tile.x, tile.y);
@@ -271,19 +299,130 @@ function addPlayerAnims(game) {
     });
     game.anims.create({
         key: 'player_jump',
-        frames: game.anims.generateFrameNumbers('player', {start: 16, end: 23}),
+        frames: game.anims.generateFrameNumbers('player', {start: 14, end: 21}),
         frameRate: playerProps.animSpeeds.jumpFPS,
         repeat: 0
     });
     game.anims.create({
         key: 'player_fall',
-        frames: game.anims.generateFrameNumbers('player', {start: 22, end: 23}),
+        frames: game.anims.generateFrameNumbers('player', {start: 20, end: 21}),
         frameRate: playerProps.animSpeeds.jumpFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_climb',
-        frames: game.anims.generateFrameNumbers('player', {start: 81, end: 84}),
+        frames: game.anims.generateFrameNumbers('player', {start: 22, end: 25}),
+        frameRate: playerProps.animSpeeds.idleFPS,
+        repeat: -1
+    });
+
+    game.anims.create({
+        key: 'player_boots_idle',
+        frames: game.anims.generateFrameNumbers('player_jump', {start: 0, end: 3}),
+        frameRate: playerProps.animSpeeds.idleFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_run',
+        frames: game.anims.generateFrameNumbers('player_jump', {start: 8, end: 13}),
+        frameRate: playerProps.animSpeeds.runFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_duck',
+        frames: game.anims.generateFrameNumbers('player_jump', {start: 4, end: 7}),
+        frameRate: playerProps.animSpeeds.idleFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_jump',
+        frames: game.anims.generateFrameNumbers('player_jump', {start: 14, end: 21}),
+        frameRate: playerProps.animSpeeds.jumpFPS,
+        repeat: 0
+    });
+    game.anims.create({
+        key: 'player_boots_fall',
+        frames: game.anims.generateFrameNumbers('player_jump', {start: 20, end: 21}),
+        frameRate: playerProps.animSpeeds.jumpFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_climb',
+        frames: game.anims.generateFrameNumbers('player_jump', {start: 22, end: 25}),
+        frameRate: playerProps.animSpeeds.idleFPS,
+        repeat: -1
+    });
+
+    game.anims.create({
+        key: 'player_boots_cape_idle',
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 0, end: 3}),
+        frameRate: playerProps.animSpeeds.idleFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_cape_run',
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 8, end: 13}),
+        frameRate: playerProps.animSpeeds.runFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_cape_duck',
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 4, end: 7}),
+        frameRate: playerProps.animSpeeds.idleFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_cape_jump',
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 14, end: 21}),
+        frameRate: playerProps.animSpeeds.jumpFPS,
+        repeat: 0
+    });
+    game.anims.create({
+        key: 'player_boots_cape_fall',
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 20, end: 21}),
+        frameRate: playerProps.animSpeeds.jumpFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_cape_climb',
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 22, end: 25}),
+        frameRate: playerProps.animSpeeds.idleFPS,
+        repeat: -1
+    });
+
+    game.anims.create({
+        key: 'player_boots_cape_gauntlets_idle',
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 0, end: 3}),
+        frameRate: playerProps.animSpeeds.idleFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_cape_gauntlets_run',
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 8, end: 13}),
+        frameRate: playerProps.animSpeeds.runFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_cape_gauntlets_duck',
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 4, end: 7}),
+        frameRate: playerProps.animSpeeds.idleFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_cape_gauntlets_jump',
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 14, end: 21}),
+        frameRate: playerProps.animSpeeds.jumpFPS,
+        repeat: 0
+    });
+    game.anims.create({
+        key: 'player_boots_cape_gauntlets_fall',
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 20, end: 21}),
+        frameRate: playerProps.animSpeeds.jumpFPS,
+        repeat: -1
+    });
+    game.anims.create({
+        key: 'player_boots_cape_gauntlets_climb',
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 22, end: 25}),
         frameRate: playerProps.animSpeeds.idleFPS,
         repeat: -1
     });
@@ -299,7 +438,7 @@ function addCollideOverlap(game) {
 
     game.physics.add.overlap(player, layers.obstaclesLayer);
     game.physics.add.overlap(player, layers.climbLayer);
-    game.physics.add.overlap([player, layers.leversLayer]);
+    game.physics.add.overlap(player, layers.leversLayer);
 }
 
 function update() {
@@ -317,7 +456,7 @@ function update() {
         player.setFlipY(false);
         player.body.setAllowGravity(true);
         if (!playerProps.checks.onGround && !playerProps.checks.isJumping) {
-            player.anims.play('player_fall', true);
+            player.anims.play('player'+playerProps.anims.present+'_fall', true);
         }
     }
 
@@ -335,7 +474,7 @@ function update() {
         if (playerProps.checks.isClimbing) {
             player.setFlipY(false);
             player.body.setVelocityY(playerProps.speeds.climbSpeed);
-            player.anims.play('player_climb', true);
+            player.anims.play('player'+playerProps.anims.present+'_climb', true);
         }
     } else if (cursors.left.isDown) {
         if (cursors.up.isDown && playerProps.checks.onGround) {
@@ -349,20 +488,20 @@ function update() {
         leftRightMove('right');
     } else if (cursors.down.isDown) {
         if (playerProps.checks.onGround) {
-            player.anims.play('player_duck', true);
+            player.anims.play('player'+playerProps.anims.present+'_duck', true);
         }
         if (playerProps.checks.isClimbing) {
             player.setFlipY(true);
             player.body.setVelocityY(-playerProps.speeds.climbSpeed);
-            player.anims.play('player_climb', true);
+            player.anims.play('player'+playerProps.anims.present+'_climb', true);
         }
     } else {
         playerProps.speeds.velocityX = 0;
 
         if (playerProps.checks.onGround) {
-            player.anims.play('player_idle', true);
+            player.anims.play('player'+playerProps.anims.present+'_idle', true);
         } else if (playerProps.checks.isClimbing) {
-            player.anims.play('player_climbing');
+            player.anims.play('player'+playerProps.anims.present+'_climbing');
         }
     }
 
@@ -372,7 +511,7 @@ function update() {
 function jump() {
     player.body.setVelocityX(playerProps.speeds.velocityX);
     player.body.setVelocityY(playerProps.speeds.jumpSpeed);
-    player.anims.play('player_jump');
+    player.anims.play('player'+playerProps.anims.present+'_jump');
     playerProps.checks.isJumping = true;
 }
 
@@ -392,9 +531,9 @@ function leftRightMove(dir) {
     playerProps.speeds.velocityX = dirs[dir]['speed'];
 
     if (playerProps.checks.onGround) {
-        player.anims.play('player_run', true);
+        player.anims.play('player'+playerProps.anims.present+'_run', true);
     } else if (playerProps.checks.isClimbing) {
-        player.anims.play('player_climb', true);
+        player.anims.play('player'+playerProps.anims.present+'_climb', true);
     }
 }
 
