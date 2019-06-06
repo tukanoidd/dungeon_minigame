@@ -6,6 +6,7 @@ var playerProps = {
         speed: 250,
         velocityX: 0,
         jumpSpeed: -230,
+        fallSpeed: 400,
         climbSpeed: -70
     },
     'animSpeeds': {
@@ -17,6 +18,7 @@ var playerProps = {
         onGround: true,
         isClimbing: false,
         isJumping: false,
+        fallBosted: false,
         tped: false
     },
     'checkpoint': {
@@ -55,7 +57,7 @@ var mapStuffCoordsLinks = {
                 x: 90,
                 y: 7
             },
-            'boost': -50
+            'boost': -200
         },
         'climb': {
             'coords': {
@@ -98,8 +100,24 @@ var mapStuffCoordsLinks = {
             'link': [[142, 52], [142, 53], [142, 54], [142, 55], [142, 56]],
             'pulled': false
         },
+    },
+    'crossbows': {
+        'left': null,
+        'right': null,
+        'sprites': [],
+        'timers': {
+            'left': null,
+            'right': null
+        },
+        'arrows': {
+            'speed': 100,
+            'group': null,
+            'delay': 4000
+        }
     }
 };
+
+var spacebarText;
 
 function preload() {
     this.load.spritesheet(
@@ -137,10 +155,26 @@ function preload() {
     this.load.image('tileset', 'assets/tileset.png');
     this.load.image('items', 'assets/items.png');
     this.load.image('decor', 'assets/decor.png');
-    this.load.tilemapTiledJSON('map', 'assets/map3.json');
+    this.load.tilemapTiledJSON('map', 'assets/map.json');
+    this.load.spritesheet('crossbow', 'assets/crossbow.png', {
+        frameWidth: 32,
+        frameHeight: 28
+    });
+    this.load.image('arrow', 'assets/arrow.png');
+    this.load.audio('background_music', 'assets/dungeon_theme.mp3');
 }
 
 function create() {
+    var music = this.sound.add('background_music', {
+        mute: false,
+        volume: 0.5,
+        rate: 1,
+        detune: 0,
+        seek: 0,
+        loop: true,
+        delay: 0
+    }).play();
+
     cursors = this.input.keyboard.createCursorKeys();
 
     map = this.add.tilemap('map', 32, 32);
@@ -149,12 +183,13 @@ function create() {
     addLayers();
 
     setCollisionsCallbacks(this);
+    addCrossbowsAndAnims(this);
 
     this.physics.world.bounds.width = layers.mapLayer.width;
     this.physics.world.bounds.height = layers.mapLayer.height;
 
     player = this.physics.add.sprite(playerProps.checkpoint.default.x, playerProps.checkpoint.default.y, 'player', 0);
-    player.body.setSize(25, 37);
+    player.body.setSize(26, 31).setOffset(12.5, 6);
     player.setCollideWorldBounds(true);
 
     addPlayerAnims(this);
@@ -163,7 +198,24 @@ function create() {
     this.cameras.main.startFollow(player);
     this.cameras.main.zoom = 2;
 
+    console.log(this.cameras.main.centerX, this.cameras.main.centerY);
+    console.log(this.cameras.main.width, this.cameras.main.height);
+    spacebarText = this.add.text(this.cameras.main.centerX - this.cameras.main.width/2 + 270, this.cameras.main.centerY + this.cameras.main.height/2 - 200, 'SPACEBAR', {
+        fontFamily: 'Sans Serif',
+        fontSize: '16px',
+        color: '#fff',
+        align: 'center'
+    }).setScrollFactor(0).setOrigin(0.5, 0.5);
+    spacebarText.visible = false;
+    console.log(spacebarText.y);
+
     addCollideOverlap(this);
+
+    var cheatBtn = this.input.keyboard.addKey('G');
+    cheatBtn.on('down', (e) => {
+        player.x = 2544;
+        player.y = 112;
+    });
 }
 
 function addTilesets() {
@@ -190,7 +242,9 @@ function setCollisionsCallbacks(game) {
     layers.mapLayer.setCollisionByExclusion([-1]);
     layers.checkpointLayer.setTileIndexCallback([85], setCheckpoint, game);
     layers.tpDoorsLayer.setTileIndexCallback([159, 183, 207], tpDoor, game);
-    //treasure
+    layers.treasureLayer.setTileIndexCallback([439, 440], (player, tile) => {
+        win(game);
+    }, game);
     layers.potionLayer.setTileIndexCallback([405, 421, 436], (player, tile) => {
         grabPotion(player, tile, game);
     }, game);
@@ -199,6 +253,86 @@ function setCollisionsCallbacks(game) {
     layers.obstaclesLayer.setTileIndexCallback([167, 190, 192, 215], obstacleKill, game);
     layers.climbLayer.setTileIndexCallback([131, 155], climb, game);
     layers.leversLayer.setTileIndexCallback([117, 119], leverFlip, this);
+}
+
+function addCrossbowsAndAnims(game) {
+    game.anims.create({
+        key: 'crossbow_shoot',
+        frames: game.anims.generateFrameNumbers('crossbow', {start: 0, end: 1}),
+        frameRate: 10,
+        repeat: 0
+    });
+
+    mapStuffCoordsLinks.crossbows.left = game.add.group();
+    mapStuffCoordsLinks.crossbows.right = game.add.group();
+
+    //left directed crossbows
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(560, 776, 'crossbow', 0));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(560, 552, 'crossbow', 0));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(784, 456, 'crossbow', 0));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(784, 264, 'crossbow', 0));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(1008, 168, 'crossbow', 0));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(1008, 120, 'crossbow', 0));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(1536, 360, 'crossbow', 0));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(1536, 600, 'crossbow', 0));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(2672, 856, 'crossbow', 0));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(2672, 680, 'crossbow', 0));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(2672, 344, 'crossbow', 0));
+
+    for (let i = 0; i < 11; i++) mapStuffCoordsLinks.crossbows.left.add(mapStuffCoordsLinks.crossbows.sprites[i]);
+
+    mapStuffCoordsLinks.crossbows.timers.left = game.time.addEvent({
+        delay: mapStuffCoordsLinks.crossbows.arrows.delay,
+        callback: shoot,
+        args: ['left', game],
+        callbackScope: game,
+        loop: true
+    });
+
+    //right directed crosssbows
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(1104, 808, 'crossbow', 0).setFlipX(true));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(114, 152, 'crossbow', 0).setFlipX(true));
+    mapStuffCoordsLinks.crossbows.sprites.push(game.add.sprite(2400, 232, 'crossbow', 0).setFlipX(true));
+
+    for (let i = 11; i < mapStuffCoordsLinks.crossbows.sprites.length; i++)
+        mapStuffCoordsLinks.crossbows.right.add(mapStuffCoordsLinks.crossbows.sprites[i]);
+
+    mapStuffCoordsLinks.crossbows.timers.right = game.time.addEvent({
+        delay: mapStuffCoordsLinks.crossbows.arrows.delay,
+        callback: shoot,
+        args: ['right', game],
+        callbackScope: game,
+        loop: true
+    });
+
+    mapStuffCoordsLinks.crossbows.arrows.group = game.add.group();
+}
+
+function shoot(dir, game) {
+    if (dir === 'left') {
+        for (let i = 0; i < mapStuffCoordsLinks.crossbows.left.getChildren().length; i++) {
+            let crossbow = mapStuffCoordsLinks.crossbows.left.getChildren()[i];
+            mapStuffCoordsLinks.crossbows.left.getChildren()[i].anims.play('crossbow_shoot', false);
+
+            let arrow = game.physics.add.sprite(crossbow.x - 31, crossbow.y, 'arrow');
+            arrow.body.setAllowGravity(false);
+            arrow.body.setVelocityX(-mapStuffCoordsLinks.crossbows.arrows.speed);
+
+            mapStuffCoordsLinks.crossbows.arrows.group.add(arrow);
+        }
+    } else {
+        for (let i = 0; i < mapStuffCoordsLinks.crossbows.right.getChildren().length; i++) {
+            let crossbow = mapStuffCoordsLinks.crossbows.right.getChildren()[i];
+            mapStuffCoordsLinks.crossbows.right.getChildren()[i].anims.play('crossbow_shoot', false);
+
+            let arrow = game.physics.add.sprite(crossbow.x + 31, crossbow.y, 'arrow');
+            arrow.setFlipX(true);
+            arrow.body.setAllowGravity(false);
+            arrow.body.setVelocityX(mapStuffCoordsLinks.crossbows.arrows.speed);
+
+            mapStuffCoordsLinks.crossbows.arrows.group.add(arrow);
+        }
+    }
 }
 
 function setCheckpoint(player, tile) {
@@ -220,7 +354,7 @@ function grabPotion(player, tile, game) {
         playerProps.speeds.jumpSpeed += mapStuffCoordsLinks.potions.jump.boost;
         playerProps.anims.present = '_boots';
     } else if (tile.x === mapStuffCoordsLinks.potions.fall.coords.x && tile.y === mapStuffCoordsLinks.potions.fall.coords.y) {
-        game.physics.world.gravity.y += mapStuffCoordsLinks.potions.fall.boost;
+        playerProps.checks.fallBoosted = true;
         playerProps.anims.present = '_boots_cape';
     } else if (tile.x === mapStuffCoordsLinks.potions.climb.coords.x && tile.y === mapStuffCoordsLinks.potions.climb.coords.y) {
         playerProps.speeds.climbSpeed += mapStuffCoordsLinks.potions.climb.boost;
@@ -262,13 +396,18 @@ function leverFlip(player, tile) {
     }
 }
 
-function obstacleKill(player, tile) {
-    player.x = playerProps.checkpoint.present.x;
-    player.y = playerProps.checkpoint.present.y;
+function arrowKill(player, arrow) {
+    arrow.destroy();
+    kill();
 }
 
-function reset(game) {
-    game.scene.restart();
+function obstacleKill() {
+    kill();
+}
+
+function kill() {
+    player.x = playerProps.checkpoint.present.x;
+    player.y = playerProps.checkpoint.present.y;
 }
 
 function climb(player, tile) {
@@ -432,21 +571,30 @@ function addCollideOverlap(game) {
     game.physics.add.collider(layers.mapLayer, player);
     game.physics.add.overlap(layers.checkpointLayer, player);
     game.physics.add.overlap(layers.tpDoorsLayer, player);
-    //treasure
+    game.physics.add.overlap(layers.treasureLayer, player);
     game.physics.add.overlap(layers.potionLayer, player);
     game.physics.add.collider(layers.leverBlocksLayer, player);
 
     game.physics.add.overlap(player, layers.obstaclesLayer);
     game.physics.add.overlap(player, layers.climbLayer);
     game.physics.add.overlap(player, layers.leversLayer);
+
+    game.physics.add.collider(mapStuffCoordsLinks.crossbows.arrows.group, layers.mapLayer, (arrow, map) => {
+        arrow.destroy();
+    });
+    game.physics.add.collider(player, mapStuffCoordsLinks.crossbows.arrows.group, arrowKill);
 }
 
 function update() {
+    spacebarText.visible = false;
     player.body.setVelocityX(0);
     playerProps.checks.onGround = player.body.onFloor();
 
     if (playerProps.checks.onGround) {
         playerProps.checks.isJumping = false;
+    } else if (playerProps.checks.fallBoosted) {
+        spacebarText.visible = true;
+        if (cursors.space.isDown) player.body.setVelocityY(this.physics.world.gravity.y + mapStuffCoordsLinks.potions.fall.boost);
     }
 
     if (playerProps.checks.isClimbing) {
@@ -456,7 +604,7 @@ function update() {
         player.setFlipY(false);
         player.body.setAllowGravity(true);
         if (!playerProps.checks.onGround && !playerProps.checks.isJumping) {
-            player.anims.play('player'+playerProps.anims.present+'_fall', true);
+            player.anims.play('player' + playerProps.anims.present + '_fall', true);
         }
     }
 
@@ -474,7 +622,7 @@ function update() {
         if (playerProps.checks.isClimbing) {
             player.setFlipY(false);
             player.body.setVelocityY(playerProps.speeds.climbSpeed);
-            player.anims.play('player'+playerProps.anims.present+'_climb', true);
+            player.anims.play('player' + playerProps.anims.present + '_climb', true);
         }
     } else if (cursors.left.isDown) {
         if (cursors.up.isDown && playerProps.checks.onGround) {
@@ -488,20 +636,20 @@ function update() {
         leftRightMove('right');
     } else if (cursors.down.isDown) {
         if (playerProps.checks.onGround) {
-            player.anims.play('player'+playerProps.anims.present+'_duck', true);
+            player.anims.play('player' + playerProps.anims.present + '_duck', true);
         }
         if (playerProps.checks.isClimbing) {
             player.setFlipY(true);
             player.body.setVelocityY(-playerProps.speeds.climbSpeed);
-            player.anims.play('player'+playerProps.anims.present+'_climb', true);
+            player.anims.play('player' + playerProps.anims.present + '_climb', true);
         }
     } else {
         playerProps.speeds.velocityX = 0;
 
         if (playerProps.checks.onGround) {
-            player.anims.play('player'+playerProps.anims.present+'_idle', true);
+            player.anims.play('player' + playerProps.anims.present + '_idle', true);
         } else if (playerProps.checks.isClimbing) {
-            player.anims.play('player'+playerProps.anims.present+'_climbing');
+            player.anims.play('player' + playerProps.anims.present + '_climb');
         }
     }
 
@@ -511,7 +659,7 @@ function update() {
 function jump() {
     player.body.setVelocityX(playerProps.speeds.velocityX);
     player.body.setVelocityY(playerProps.speeds.jumpSpeed);
-    player.anims.play('player'+playerProps.anims.present+'_jump');
+    player.anims.play('player' + playerProps.anims.present + '_jump');
     playerProps.checks.isJumping = true;
 }
 
@@ -531,10 +679,33 @@ function leftRightMove(dir) {
     playerProps.speeds.velocityX = dirs[dir]['speed'];
 
     if (playerProps.checks.onGround) {
-        player.anims.play('player'+playerProps.anims.present+'_run', true);
+        player.anims.play('player' + playerProps.anims.present + '_run', true);
     } else if (playerProps.checks.isClimbing) {
-        player.anims.play('player'+playerProps.anims.present+'_climb', true);
+        player.anims.play('player' + playerProps.anims.present + '_climb', true);
     }
+}
+
+function win(game) {
+    var winTextStyle = {
+        fontFamily: 'Sans Serif',
+        fontSize: '32px',
+        color: '#fff',
+        align: 'center'
+    };
+    var winText = game.add.text(game.cameras.main.centerX, game.cameras.main.centerY, "You Win!!", winTextStyle).setScrollFactor(0).setOrigin(0.5, 0.5);
+
+    var restartTextStyle = {
+        fontFamily: 'Sans Serif',
+        fontSize: '16px',
+        color: '#fff',
+        align: 'center'
+    };
+    var restartText = game.add.text(game.cameras.main.centerX, game.cameras.main.centerY + 40, "Press R to restart", restartTextStyle).setScrollFactor(0).setOrigin(0.5, 0.5);
+
+    var R = game.input.keyboard.addKey('R');
+    R.on('down', (e) => {
+        location.reload();
+    });
 }
 
 var config = {
