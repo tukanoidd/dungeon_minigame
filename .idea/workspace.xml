@@ -25,8 +25,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/game_p3.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="525">
-              <caret line="660" column="4" selection-start-line="660" selection-start-column="4" selection-end-line="660" selection-end-column="4" />
+            <state relative-caret-position="396">
+              <caret line="601" column="42" lean-forward="true" selection-start-line="601" selection-start-column="42" selection-end-line="601" selection-end-column="42" />
             </state>
           </provider>
         </entry>
@@ -53,24 +53,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>obstaclesLayer</find>
-      <find>climbLayer</find>
-      <find>speed</find>
-      <find>velocityX</find>
-      <find>jumpSpeed</find>
-      <find>climbSpeed</find>
-      <find>runFPS</find>
-      <find>jumpFPS</find>
-      <find>idleFPS</find>
-      <find>onGround</find>
-      <find>isClimbing</find>
-      <find>isJumping</find>
-      <find>layers</find>
-      <find>leversLayers</find>
-      <find>third</find>
-      <find>_duck</find>
-      <find>_run</find>
-      <find>_jump</find>
       <find>_fall</find>
       <find>_climb</find>
       <find>body.setSize(</find>
@@ -83,6 +65,24 @@
       <find>player.body.setSize(</find>
       <find>reset</find>
       <find>obstacleKill</find>
+      <find>crossbow</find>
+      <find>R</find>
+      <find>this.input</find>
+      <find>win</find>
+      <find>trea</find>
+      <find>player</find>
+      <find>gravityY</find>
+      <find>update</find>
+      <find>grabPotion</find>
+      <find>spacebarText.alpha = 0;</find>
+      <find>.alpha = 0;</find>
+      <find>this.add.text</find>
+      <find>.add.text</find>
+      <find>console.log</find>
+      <find>alpha = 0</find>
+      <find>alpha = 1</find>
+      <find>create</find>
+      <find>spacebarText</find>
     </findStrings>
   </component>
   <component name="IdeDocumentHistory">
@@ -144,7 +144,7 @@
   <component name="PropertiesComponent">
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Max/MaxGame" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
@@ -213,18 +213,20 @@
       <workItem from="1559574380780" duration="3635000" />
       <workItem from="1559719485101" duration="52000" />
       <workItem from="1559724696878" duration="639000" />
-      <workItem from="1559731700143" duration="14674000" />
+      <workItem from="1559731700143" duration="22569000" />
+      <workItem from="1559928661703" duration="1572000" />
+      <workItem from="1560030479291" duration="489000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="117711000" />
+    <option name="totallyTimeSpent" value="127667000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.094630875" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.09731544" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="DB Browser" order="2" />
       <window_info id="Favorites" order="3" side_tool="true" />
@@ -312,8 +314,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/game_p3.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="525">
-          <caret line="660" column="4" selection-start-line="660" selection-start-column="4" selection-end-line="660" selection-end-column="4" />
+        <state relative-caret-position="396">
+          <caret line="601" column="42" lean-forward="true" selection-start-line="601" selection-start-column="42" selection-end-line="601" selection-end-column="42" />
         </state>
       </provider>
     </entry>

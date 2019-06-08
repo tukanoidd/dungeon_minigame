@@ -198,7 +198,7 @@ function create() {
     this.cameras.main.startFollow(player);
     this.cameras.main.zoom = 2;
 
-    spacebarText = this.add.text(this.cameras.main.centerX - this.cameras.main.width/2 + 270, this.cameras.main.centerY + this.cameras.main.height/2 - 200, 'SPACEBAR', {
+    spacebarText = this.add.text(this.cameras.main.centerX - this.cameras.main.width/2 + 450, this.cameras.main.centerY + this.cameras.main.height/2 - 200, 'SPACEBAR', {
         fontFamily: 'Sans Serif',
         fontSize: '16px',
         color: '#fff',
