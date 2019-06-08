@@ -198,8 +198,6 @@ function create() {
     this.cameras.main.startFollow(player);
     this.cameras.main.zoom = 2;
 
-    console.log(this.cameras.main.centerX, this.cameras.main.centerY);
-    console.log(this.cameras.main.width, this.cameras.main.height);
     spacebarText = this.add.text(this.cameras.main.centerX - this.cameras.main.width/2 + 270, this.cameras.main.centerY + this.cameras.main.height/2 - 200, 'SPACEBAR', {
         fontFamily: 'Sans Serif',
         fontSize: '16px',
@@ -207,7 +205,6 @@ function create() {
         align: 'center'
     }).setScrollFactor(0).setOrigin(0.5, 0.5);
     spacebarText.visible = false;
-    console.log(spacebarText.y);
 
     addCollideOverlap(this);
 
@@ -586,12 +583,12 @@ function addCollideOverlap(game) {
 }
 
 function update() {
-    spacebarText.visible = false;
     player.body.setVelocityX(0);
     playerProps.checks.onGround = player.body.onFloor();
 
     if (playerProps.checks.onGround) {
         playerProps.checks.isJumping = false;
+        spacebarText.visible = false;
     } else if (playerProps.checks.fallBoosted) {
         spacebarText.visible = true;
         if (cursors.space.isDown) player.body.setVelocityY(this.physics.world.gravity.y + mapStuffCoordsLinks.potions.fall.boost);
@@ -704,7 +701,7 @@ function win(game) {
 
     var R = game.input.keyboard.addKey('R');
     R.on('down', (e) => {
-        location.reload();
+        window.location.reload();
     });
 }
 
