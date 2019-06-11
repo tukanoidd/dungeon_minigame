@@ -117,6 +117,8 @@ var mapStuffCoordsLinks = {
     }
 };
 
+var won = false;
+
 var sounds;
 
 var spacebarText;
@@ -164,8 +166,9 @@ function preload() {
     });
     this.load.image('arrow', 'assets/arrow.png');
     this.load.audio('background_music', 'assets/dungeon_theme.mp3');
-    this.load.audio('run', 'assets/run.flac');
+    this.load.audio('death', 'assets/death.wav');
     this.load.audio('jump', 'assets/jump.ogg');
+    this.load.audio('win', 'assets/win.ogg');
 }
 
 function create() {
@@ -217,12 +220,16 @@ function addSounds(game) {
             volume: 0.1,
             loop: true
         }).play(),
-        runSound: game.sound.add('run', {
-            volume: 0.5,
-            loop: true
+        deathSound: game.sound.add('death', {
+            volume: 0.3,
+            loop: false
         }),
         jumpSound: game.sound.add('jump', {
             volume: 0.5,
+            loop: false
+        }),
+        winSound: game.sound.add('win', {
+            volume: 0.7,
             loop: false
         })
     };
@@ -253,7 +260,11 @@ function setCollisionsCallbacks(game) {
     layers.checkpointLayer.setTileIndexCallback([85], setCheckpoint, game);
     layers.tpDoorsLayer.setTileIndexCallback([159, 183, 207], tpDoor, game);
     layers.treasureLayer.setTileIndexCallback([439, 440], (player, tile) => {
-        win(game);
+        if (!won) {
+            won = true;
+            win(game);
+        }
+
     }, game);
     layers.potionLayer.setTileIndexCallback([405, 421, 436], (player, tile) => {
         grabPotion(player, tile, game);
@@ -418,6 +429,7 @@ function obstacleKill() {
 function kill() {
     player.x = playerProps.checkpoint.present.x;
     player.y = playerProps.checkpoint.present.y;
+    sounds.deathSound.play();
 }
 
 function climb(player, tile) {
@@ -599,8 +611,6 @@ function update() {
     player.body.setVelocityX(0);
     playerProps.checks.onGround = player.body.onFloor();
 
-    if (sounds.runSound.isPlaying) sounds.runSound.stop();
-
     if (playerProps.checks.onGround) {
         playerProps.checks.isJumping = false;
         spacebarText.visible = false;
@@ -693,13 +703,14 @@ function leftRightMove(dir) {
 
     if (playerProps.checks.onGround) {
         player.anims.play('player' + playerProps.anims.present + '_run', true);
-        sounds.runSound.play();
     } else if (playerProps.checks.isClimbing) {
         player.anims.play('player' + playerProps.anims.present + '_climb', true);
     }
 }
 
 function win(game) {
+    sounds.winSound.play();
+
     var winTextStyle = {
         fontFamily: 'Sans Serif',
         fontSize: '32px',
