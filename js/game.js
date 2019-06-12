@@ -1,13 +1,15 @@
-var gravity = 300;
+var gravity = 1000; //variable for world gravity
 
-var player;
-var playerProps = {
+var player; //variable for player
+/*variable store players configuration (different speeds, FPS for animations, checkers,
+* checkpoints, prefixes for animations)
+*/
+var playerConf = {
     'speeds': {
         speed: 250,
         velocityX: 0,
-        jumpSpeed: -230,
-        fallSpeed: 400,
-        climbSpeed: -70
+        jumpSpeed: -490,
+        climbSpeed: -90
     },
     'animSpeeds': {
         runFPS: 15,
@@ -18,7 +20,7 @@ var playerProps = {
         onGround: true,
         isClimbing: false,
         isJumping: false,
-        fallBosted: false,
+        fallBoosted: false,
         tped: false
     },
     'checkpoint': {
@@ -37,34 +39,34 @@ var playerProps = {
     }
 };
 
-var cursors;
+var cursors; //variable for storing control keys
 
-var map;
-var layers = {};
-var tilesets = {};
+var map; //variable for map
+var layers = {}; //variable for storing layers
+var tilesets = {}; //variable for storing tilesets
 
-var mapStuffCoordsLinks = {
+var mapStuffCoordsLinks = { //variable for storing map confiduration (potions, levers, crossbows)
     'potions': {
         'jump': {
             'coords': {
                 x: 37,
                 y: 38
             },
-            'boost': -50
+            'boost': -150
         },
         'fall': {
             'coords': {
                 x: 90,
                 y: 7
             },
-            'boost': -200
+            'boost': -880
         },
         'climb': {
             'coords': {
                 x: 145,
                 y: 56
             },
-            'boost': -50
+            'boost': -100
         }
     },
     'levers': {
@@ -73,7 +75,12 @@ var mapStuffCoordsLinks = {
                 x: 1,
                 y: 34
             },
-            'link': [[35, 35], [35, 36], [35, 37], [35, 38]],
+            'link': [
+                [35, 35],
+                [35, 36],
+                [35, 37],
+                [35, 38]
+            ],
             'pulled': false
         },
         'second': {
@@ -81,7 +88,12 @@ var mapStuffCoordsLinks = {
                 x: 62,
                 y: 2
             },
-            'link': [[43, 1], [43, 2], [43, 3], [43, 4]],
+            'link': [
+                [43, 1],
+                [43, 2],
+                [43, 3],
+                [43, 4]
+            ],
             'pulled': false
         },
         'third': {
@@ -89,7 +101,12 @@ var mapStuffCoordsLinks = {
                 x: 74,
                 y: 43
             },
-            'link': [[96, 49], [96, 50], [96, 51], [96, 52]],
+            'link': [
+                [96, 49],
+                [96, 50],
+                [96, 51],
+                [96, 52]
+            ],
             'pulled': false
         },
         'fourth': {
@@ -97,7 +114,13 @@ var mapStuffCoordsLinks = {
                 x: 97,
                 y: 55
             },
-            'link': [[142, 52], [142, 53], [142, 54], [142, 55], [142, 56]],
+            'link': [
+                [142, 52],
+                [142, 53],
+                [142, 54],
+                [142, 55],
+                [142, 56]
+            ],
             'pulled': false
         },
     },
@@ -110,48 +133,47 @@ var mapStuffCoordsLinks = {
             'right': null
         },
         'arrows': {
-            'speed': 100,
+            'speed': 300,
             'group': null,
-            'delay': 4000
+            'delay': 2000
         }
     }
 };
 
-var won = false;
+var won = false; //variable for checking if player won
 
-var sounds;
+var sounds; //variable for storing sounds
 
-var spacebarText;
+var spacebarText; //variable for text "spacebar" which shows up after player drink 2nd potion
 
+/**
+ * function that load all assets needed for the game (spritesheets, tilesets, tilemap, sounds)
+ */
 function preload() {
     this.load.spritesheet(
         'player',
-        'assets/player_spritesheet.png',
-        {
+        'assets/player_spritesheet.png', {
             frameWidth: 50,
             frameHeight: 37
         }
     );
     this.load.spritesheet(
         'player_jump',
-        'assets/player_spritesheet_boots.png',
-        {
+        'assets/player_spritesheet_boots.png', {
             frameWidth: 50,
             frameHeight: 37
         }
     );
     this.load.spritesheet(
         'player_jump_fall',
-        'assets/player_spritesheet_boots_cape.png',
-        {
+        'assets/player_spritesheet_boots_cape.png', {
             frameWidth: 50,
             frameHeight: 37
         }
     );
     this.load.spritesheet(
         'player_jump_fall_climb',
-        'assets/player_spritesheet_boots_cape_gauntlets.png',
-        {
+        'assets/player_spritesheet_boots_cape_gauntlets.png', {
             frameWidth: 50,
             frameHeight: 37
         }
@@ -171,10 +193,13 @@ function preload() {
     this.load.audio('win', 'assets/win.ogg');
 }
 
+/**
+ * function that initiates all variables, creates map, adds collision callbacks, animations
+ */
 function create() {
     addSounds(this);
 
-    cursors = this.input.keyboard.createCursorKeys();
+    cursors = this.input.keyboard.createCursorKeys(); //control keys
 
     map = this.add.tilemap('map', 32, 32);
 
@@ -184,20 +209,26 @@ function create() {
     setCollisionsCallbacks(this);
     addCrossbowsAndAnims(this);
 
+    //create bounds of the map so player won't be able to fall of the screen in any way
     this.physics.world.bounds.width = layers.mapLayer.width;
     this.physics.world.bounds.height = layers.mapLayer.height;
 
-    player = this.physics.add.sprite(playerProps.checkpoint.default.x, playerProps.checkpoint.default.y, 'player', 0);
+    //initiate player, set smaller collision box, and make him unable to fall of the screen
+    player = this.physics.add.sprite(playerConf.checkpoint.default.x, playerConf.checkpoint.default.y, 'player', 0);
     player.body.setSize(26, 31).setOffset(12.5, 6);
     player.setCollideWorldBounds(true);
 
     addPlayerAnims(this);
 
+    /*change camera bounds to be exactly as map bounds, make it follow the player and zoom in because tilesets are too
+    small and map easily would fit the screen*/
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.cameras.main.startFollow(player);
     this.cameras.main.zoom = 2;
 
-    spacebarText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY + this.cameras.main.height/2 - 250, 'SPACEBAR', {
+    /*text "spacebar" which shows up after player grabs 2nd potion, position it properly with specific style, make it be
+     in the camera view and make it invisible*/
+    spacebarText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY + this.cameras.main.height / 2 - 250, 'SPACEBAR', {
         fontFamily: 'Sans Serif',
         fontSize: '16px',
         color: '#fff',
@@ -207,13 +238,52 @@ function create() {
 
     addCollideOverlap(this);
 
-    var cheatBtn = this.input.keyboard.addKey('G');
-    cheatBtn.on('down', (e) => {
-        player.x = 2544;
-        player.y = 112;
-    });
+    /*variable for storing cheat buttons, just in ase if game is too hard, A - 1st checkpoint, S - 2nd checkpoint,
+    * D - 3rd checkpoint, F - 4th checkpoint, G - finish
+    */
+    var cheatBtns = {
+        'check1': this.input.keyboard.addKey('A').on('down', (e) => {
+            playerConf.checkpoint.present.x = 608;
+            playerConf.checkpoint.present.y = 592;
+
+            player.x = playerConf.checkpoint.present.x;
+            player.y = playerConf.checkpoint.present.y;
+        }),
+        'check2': this.input.keyboard.addKey('S').on('down', (e) => {
+            playerConf.checkpoint.present.x = 1168;
+            playerConf.checkpoint.present.y = 48;
+
+            player.x = playerConf.checkpoint.present.x;
+            player.y = playerConf.checkpoint.present.y;
+        }),
+        'check3': this.input.keyboard.addKey('D').on('down', (e) => {
+            playerConf.checkpoint.present.x = 1680;
+            playerConf.checkpoint.present.y = 880;
+
+            player.x = playerConf.checkpoint.present.x;
+            player.y = playerConf.checkpoint.present.y;
+        }),
+        'check4': this.input.keyboard.addKey('F').on('down', (e) => {
+            playerConf.checkpoint.present.x = 2352;
+            playerConf.checkpoint.present.y = 880;
+
+            player.x = playerConf.checkpoint.present.x;
+            player.y = playerConf.checkpoint.present.y;
+        }),
+        'finish': this.input.keyboard.addKey('G').on('down', (e) => {
+            playerConf.checkpoint.present.x = 2544;
+            playerConf.checkpoint.present.y = 112;
+
+            player.x = playerConf.checkpoint.present.x;
+            player.y = playerConf.checkpoint.present.y;
+        })
+    };
 }
 
+/**
+ * function that add sounds to the game
+ * @param game {Phaser.Scene} - game context
+ */
 function addSounds(game) {
     if (!sounds) sounds = {
         backMusic: game.sound.add('background_music', {
@@ -235,12 +305,18 @@ function addSounds(game) {
     };
 }
 
+/**
+ * function that adds tilesets to the map
+ */
 function addTilesets() {
     tilesets.dungeonTileset = map.addTilesetImage('tileset', 'tileset');
     tilesets.itemsTileset = map.addTilesetImage('items', 'items');
     tilesets.decorTileset = map.addTilesetImage('decoration', 'decor');
 }
 
+/**
+ * function that adds layers to the game
+ */
 function addLayers() {
     layers.backgroundLayer = map.createStaticLayer('Background', tilesets.dungeonTileset);
     layers.miscLayer = map.createStaticLayer('Misc', [tilesets.dungeonTileset, tilesets.decorTileset]);
@@ -255,6 +331,10 @@ function addLayers() {
     layers.leversLayer = map.createDynamicLayer('Levers', tilesets.dungeonTileset);
 }
 
+/**
+ * functiin that sets collision calbacks for layers
+ * @param game {Phaser.Scene} - game context
+ */
 function setCollisionsCallbacks(game) {
     layers.mapLayer.setCollisionByExclusion([-1]);
     layers.checkpointLayer.setTileIndexCallback([85], setCheckpoint, game);
@@ -276,10 +356,17 @@ function setCollisionsCallbacks(game) {
     layers.leversLayer.setTileIndexCallback([117, 119], leverFlip, this);
 }
 
+/**
+ * function that adds crossbows to the game and sets animations crossbow shooting
+ * @param game {Phaser.Scene} - game context
+ */
 function addCrossbowsAndAnims(game) {
     game.anims.create({
         key: 'crossbow_shoot',
-        frames: game.anims.generateFrameNumbers('crossbow', {start: 0, end: 1}),
+        frames: game.anims.generateFrameNumbers('crossbow', {
+            start: 0,
+            end: 1
+        }),
         frameRate: 10,
         repeat: 0
     });
@@ -318,6 +405,7 @@ function addCrossbowsAndAnims(game) {
     for (let i = 11; i < mapStuffCoordsLinks.crossbows.sprites.length; i++)
         mapStuffCoordsLinks.crossbows.right.add(mapStuffCoordsLinks.crossbows.sprites[i]);
 
+    //looped timer for shooting arrows
     mapStuffCoordsLinks.crossbows.timers.right = game.time.addEvent({
         delay: mapStuffCoordsLinks.crossbows.arrows.delay,
         callback: shoot,
@@ -329,6 +417,11 @@ function addCrossbowsAndAnims(game) {
     mapStuffCoordsLinks.crossbows.arrows.group = game.add.group();
 }
 
+/**
+ * function which is used to shoot an arrow
+ * @param dir {string} - direction
+ * @param game {Phaser.Scene} - game context
+ */
 function shoot(dir, game) {
     if (dir === 'left') {
         for (let i = 0; i < mapStuffCoordsLinks.crossbows.left.getChildren().length; i++) {
@@ -356,59 +449,80 @@ function shoot(dir, game) {
     }
 }
 
+/**
+ * function that is used to set checkpoint when player overlaps with checkpoint and removes checkpoint tile from the map
+ * @param player {Phaser.GameObjects.Sprite} - player
+ * @param tile {Phaser.Tilemaps.Tile} - checkpoint tile
+ */
 function setCheckpoint(player, tile) {
-    playerProps.checkpoint.present.x = tile.x * 16;
-    playerProps.checkpoint.present.y = tile.y * 16;
+    playerConf.checkpoint.present.x = tile.x * 16;
+    playerConf.checkpoint.present.y = tile.y * 16;
     layers.checkpointLayer.removeTileAt(tile.x, tile.y);
 }
 
+/**
+ * function that is used to teleport player from one door to another (works only once, in one direction)
+ * @param player {Phaser.GameObjects.Sprite} - player
+ * @param tile {Phaser.Tilemaps.Tile} - door tile (not used, default variable)
+ */
 function tpDoor(player, tile) {
-    if (!playerProps.checks.tped) {
-        playerProps.checks.tped = true;
+    if (!playerConf.checks.tped) {
+        playerConf.checks.tped = true;
         player.x = 1168;
         player.y = 48;
     }
 }
 
-function grabPotion(player, tile, game) {
+/**
+ * function that is used when player grabs a potion, sets proper boost (jump, fall, or climb and changes sprites of the
+ * player so he can see if potion was grabbed) and removes the potion tile from the map
+ * @param player {Phaser.GameObjects.Sprite} - player
+ * @param tile {Phaser.Tilemaps.Tile} - potion tile
+ */
+function grabPotion(player, tile) {
     if (tile.x === mapStuffCoordsLinks.potions.jump.coords.x && tile.y === mapStuffCoordsLinks.potions.jump.coords.y) {
-        playerProps.speeds.jumpSpeed += mapStuffCoordsLinks.potions.jump.boost;
-        playerProps.anims.present = '_boots';
+        playerConf.speeds.jumpSpeed += mapStuffCoordsLinks.potions.jump.boost;
+        playerConf.anims.present = '_boots';
     } else if (tile.x === mapStuffCoordsLinks.potions.fall.coords.x && tile.y === mapStuffCoordsLinks.potions.fall.coords.y) {
-        playerProps.checks.fallBoosted = true;
-        playerProps.anims.present = '_boots_cape';
+        playerConf.checks.fallBoosted = true;
+        playerConf.anims.present = '_boots_cape';
     } else if (tile.x === mapStuffCoordsLinks.potions.climb.coords.x && tile.y === mapStuffCoordsLinks.potions.climb.coords.y) {
-        playerProps.speeds.climbSpeed += mapStuffCoordsLinks.potions.climb.boost;
-        playerProps.anims.present = '_boots_cape_gauntlets';
+        playerConf.speeds.climbSpeed += mapStuffCoordsLinks.potions.climb.boost;
+        playerConf.anims.present = '_boots_cape_gauntlets';
     }
 
     layers.potionLayer.removeTileAt(tile.x, tile.y);
 }
 
+/**
+ * function that is used when player overlaps with lever tile to open the door (lever can be flipped only once)
+ * @param player {Phaser.GameObjects.Sprite} - player
+ * @param tile {Phaser.Tilemaps.Tile} - lever tile
+ */
 function leverFlip(player, tile) {
-    if (tile.x === mapStuffCoordsLinks.levers.first.coords.x && tile.y === mapStuffCoordsLinks.levers.first.coords.y
-        && !mapStuffCoordsLinks.levers.first.pulled) {
+    if (tile.x === mapStuffCoordsLinks.levers.first.coords.x && tile.y === mapStuffCoordsLinks.levers.first.coords.y &&
+        !mapStuffCoordsLinks.levers.first.pulled) {
         mapStuffCoordsLinks.levers.first.pulled = true;
         tile.flipX = true;
         for (var brick in mapStuffCoordsLinks.levers.first.link) {
             layers.leverBlocksLayer.removeTileAt(mapStuffCoordsLinks.levers.first.link[brick][0], mapStuffCoordsLinks.levers.first.link[brick][1]);
         }
-    } else if (tile.x === mapStuffCoordsLinks.levers.second.coords.x && tile.y === mapStuffCoordsLinks.levers.second.coords.y
-        && !mapStuffCoordsLinks.levers.second.pulled) {
+    } else if (tile.x === mapStuffCoordsLinks.levers.second.coords.x && tile.y === mapStuffCoordsLinks.levers.second.coords.y &&
+        !mapStuffCoordsLinks.levers.second.pulled) {
         mapStuffCoordsLinks.levers.second.pulled = true;
         tile.flipX = true;
         for (var brick in mapStuffCoordsLinks.levers.second.link) {
             layers.leverBlocksLayer.removeTileAt(mapStuffCoordsLinks.levers.second.link[brick][0], mapStuffCoordsLinks.levers.second.link[brick][1]);
         }
-    } else if (tile.x === mapStuffCoordsLinks.levers.third.coords.x && tile.y === mapStuffCoordsLinks.levers.third.coords.y
-        && !mapStuffCoordsLinks.levers.third.pulled) {
+    } else if (tile.x === mapStuffCoordsLinks.levers.third.coords.x && tile.y === mapStuffCoordsLinks.levers.third.coords.y &&
+        !mapStuffCoordsLinks.levers.third.pulled) {
         mapStuffCoordsLinks.levers.third.pulled = true;
         tile.flipX = true;
         for (var brick in mapStuffCoordsLinks.levers.third.link) {
             layers.leverBlocksLayer.removeTileAt(mapStuffCoordsLinks.levers.third.link[brick][0], mapStuffCoordsLinks.levers.third.link[brick][1]);
         }
-    } else if (tile.x === mapStuffCoordsLinks.levers.fourth.coords.x && tile.y === mapStuffCoordsLinks.levers.fourth.coords.y
-        && !mapStuffCoordsLinks.levers.fourth.pulled) {
+    } else if (tile.x === mapStuffCoordsLinks.levers.fourth.coords.x && tile.y === mapStuffCoordsLinks.levers.fourth.coords.y &&
+        !mapStuffCoordsLinks.levers.fourth.pulled) {
         mapStuffCoordsLinks.levers.fourth.pulled = true;
         tile.flipX = true;
         for (var brick in mapStuffCoordsLinks.levers.fourth.link) {
@@ -417,178 +531,274 @@ function leverFlip(player, tile) {
     }
 }
 
+/**
+ * function that is used when player collides with arrow and kills him, arrow is destroyed too
+ * @param player {Phaser.GameObjects.Sprite} - player
+ * @param arrow {Phaser.GameObjects.Sprite} - arrow object
+ */
 function arrowKill(player, arrow) {
     arrow.destroy();
     kill();
 }
 
+/**
+ * function that basically does killing, but specifically used when player is killed by an obstacle to make code more
+ * structured and understandable
+ */
 function obstacleKill() {
     kill();
 }
 
+/**
+ * funciton that is used when player dies, teleports player to last checkpoint and plays death sound
+ */
 function kill() {
-    player.x = playerProps.checkpoint.present.x;
-    player.y = playerProps.checkpoint.present.y;
+    player.x = playerConf.checkpoint.present.x;
+    player.y = playerConf.checkpoint.present.y;
     sounds.deathSound.play();
 }
 
+/**
+ * function that is used to set checkers for jumping and climbing when player starts climbing
+ * @param player {Phaser.GameObjects.Sprite} - player
+ * @param tile {Phaser.Tilemaps.Tile} - climbing tile (chain)
+ */
 function climb(player, tile) {
-    playerProps.checks.isClimbing = true;
-    playerProps.checks.isJumping = false;
-
-    return false;
+    playerConf.checks.isClimbing = true;
+    playerConf.checks.isJumping = false;
 }
 
+/**
+ * function that adds all player animations to the game (run, duck (which is not used because of limitations of phaser
+ * arcade physics(can't change collision box properly), was too lazy to get rid of it), climb, jump, fall, idle)
+ * @param game {Phaser.Scene} - game context
+ */
 function addPlayerAnims(game) {
     game.anims.create({
         key: 'player_idle',
-        frames: game.anims.generateFrameNumbers('player', {start: 0, end: 3}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player', {
+            start: 0,
+            end: 3
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_run',
-        frames: game.anims.generateFrameNumbers('player', {start: 8, end: 13}),
-        frameRate: playerProps.animSpeeds.runFPS,
+        frames: game.anims.generateFrameNumbers('player', {
+            start: 8,
+            end: 13
+        }),
+        frameRate: playerConf.animSpeeds.runFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_duck',
-        frames: game.anims.generateFrameNumbers('player', {start: 4, end: 7}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player', {
+            start: 4,
+            end: 7
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_jump',
-        frames: game.anims.generateFrameNumbers('player', {start: 14, end: 21}),
-        frameRate: playerProps.animSpeeds.jumpFPS,
+        frames: game.anims.generateFrameNumbers('player', {
+            start: 14,
+            end: 21
+        }),
+        frameRate: playerConf.animSpeeds.jumpFPS,
         repeat: 0
     });
     game.anims.create({
         key: 'player_fall',
-        frames: game.anims.generateFrameNumbers('player', {start: 20, end: 21}),
-        frameRate: playerProps.animSpeeds.jumpFPS,
+        frames: game.anims.generateFrameNumbers('player', {
+            start: 20,
+            end: 21
+        }),
+        frameRate: playerConf.animSpeeds.jumpFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_climb',
-        frames: game.anims.generateFrameNumbers('player', {start: 22, end: 25}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player', {
+            start: 22,
+            end: 25
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
 
     game.anims.create({
         key: 'player_boots_idle',
-        frames: game.anims.generateFrameNumbers('player_jump', {start: 0, end: 3}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player_jump', {
+            start: 0,
+            end: 3
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_run',
-        frames: game.anims.generateFrameNumbers('player_jump', {start: 8, end: 13}),
-        frameRate: playerProps.animSpeeds.runFPS,
+        frames: game.anims.generateFrameNumbers('player_jump', {
+            start: 8,
+            end: 13
+        }),
+        frameRate: playerConf.animSpeeds.runFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_duck',
-        frames: game.anims.generateFrameNumbers('player_jump', {start: 4, end: 7}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player_jump', {
+            start: 4,
+            end: 7
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_jump',
-        frames: game.anims.generateFrameNumbers('player_jump', {start: 14, end: 21}),
-        frameRate: playerProps.animSpeeds.jumpFPS,
+        frames: game.anims.generateFrameNumbers('player_jump', {
+            start: 14,
+            end: 21
+        }),
+        frameRate: playerConf.animSpeeds.jumpFPS,
         repeat: 0
     });
     game.anims.create({
         key: 'player_boots_fall',
-        frames: game.anims.generateFrameNumbers('player_jump', {start: 20, end: 21}),
-        frameRate: playerProps.animSpeeds.jumpFPS,
+        frames: game.anims.generateFrameNumbers('player_jump', {
+            start: 20,
+            end: 21
+        }),
+        frameRate: playerConf.animSpeeds.jumpFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_climb',
-        frames: game.anims.generateFrameNumbers('player_jump', {start: 22, end: 25}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player_jump', {
+            start: 22,
+            end: 25
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
 
     game.anims.create({
         key: 'player_boots_cape_idle',
-        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 0, end: 3}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {
+            start: 0,
+            end: 3
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_cape_run',
-        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 8, end: 13}),
-        frameRate: playerProps.animSpeeds.runFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {
+            start: 8,
+            end: 13
+        }),
+        frameRate: playerConf.animSpeeds.runFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_cape_duck',
-        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 4, end: 7}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {
+            start: 4,
+            end: 7
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_cape_jump',
-        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 14, end: 21}),
-        frameRate: playerProps.animSpeeds.jumpFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {
+            start: 14,
+            end: 21
+        }),
+        frameRate: playerConf.animSpeeds.jumpFPS,
         repeat: 0
     });
     game.anims.create({
         key: 'player_boots_cape_fall',
-        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 20, end: 21}),
-        frameRate: playerProps.animSpeeds.jumpFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {
+            start: 20,
+            end: 21
+        }),
+        frameRate: playerConf.animSpeeds.jumpFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_cape_climb',
-        frames: game.anims.generateFrameNumbers('player_jump_fall', {start: 22, end: 25}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall', {
+            start: 22,
+            end: 25
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
 
     game.anims.create({
         key: 'player_boots_cape_gauntlets_idle',
-        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 0, end: 3}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {
+            start: 0,
+            end: 3
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_cape_gauntlets_run',
-        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 8, end: 13}),
-        frameRate: playerProps.animSpeeds.runFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {
+            start: 8,
+            end: 13
+        }),
+        frameRate: playerConf.animSpeeds.runFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_cape_gauntlets_duck',
-        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 4, end: 7}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {
+            start: 4,
+            end: 7
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_cape_gauntlets_jump',
-        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 14, end: 21}),
-        frameRate: playerProps.animSpeeds.jumpFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {
+            start: 14,
+            end: 21
+        }),
+        frameRate: playerConf.animSpeeds.jumpFPS,
         repeat: 0
     });
     game.anims.create({
         key: 'player_boots_cape_gauntlets_fall',
-        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 20, end: 21}),
-        frameRate: playerProps.animSpeeds.jumpFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {
+            start: 20,
+            end: 21
+        }),
+        frameRate: playerConf.animSpeeds.jumpFPS,
         repeat: -1
     });
     game.anims.create({
         key: 'player_boots_cape_gauntlets_climb',
-        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {start: 22, end: 25}),
-        frameRate: playerProps.animSpeeds.idleFPS,
+        frames: game.anims.generateFrameNumbers('player_jump_fall_climb', {
+            start: 22,
+            end: 25
+        }),
+        frameRate: playerConf.animSpeeds.idleFPS,
         repeat: -1
     });
 }
 
+/**
+ * function that is used to add colliders and overlaps to the game
+ * @param game {Phaser.Scene} - game context
+ */
 function addCollideOverlap(game) {
     game.physics.add.collider(layers.mapLayer, player);
     game.physics.add.overlap(layers.checkpointLayer, player);
@@ -607,26 +817,30 @@ function addCollideOverlap(game) {
     game.physics.add.collider(player, mapStuffCoordsLinks.crossbows.arrows.group, arrowKill);
 }
 
+/**
+ * function that is called every frame of the game (if I'm not mistaken), used to check different player states, changes
+ * animations because of different states, checks controls
+ */
 function update() {
     player.body.setVelocityX(0);
-    playerProps.checks.onGround = player.body.onFloor();
+    playerConf.checks.onGround = player.body.onFloor();
 
-    if (playerProps.checks.onGround) {
-        playerProps.checks.isJumping = false;
+    if (playerConf.checks.onGround || playerConf.checks.isClimbing) {
+        playerConf.checks.isJumping = false;
         spacebarText.visible = false;
-    } else if (playerProps.checks.fallBoosted) {
+    } else if (playerConf.checks.fallBoosted && !playerConf.checks.isClimbing) {
         spacebarText.visible = true;
         if (cursors.space.isDown) player.body.setVelocityY(this.physics.world.gravity.y + mapStuffCoordsLinks.potions.fall.boost);
     }
 
-    if (playerProps.checks.isClimbing) {
+    if (playerConf.checks.isClimbing) {
         player.body.setAllowGravity(false);
         player.body.setVelocityY(0);
     } else {
         player.setFlipY(false);
         player.body.setAllowGravity(true);
-        if (!playerProps.checks.onGround && !playerProps.checks.isJumping) {
-            player.anims.play('player' + playerProps.anims.present + '_fall', true);
+        if (!playerConf.checks.onGround && !playerConf.checks.isJumping) {
+            player.anims.play('player' + playerConf.anims.present + '_fall', true);
         }
     }
 
@@ -638,76 +852,89 @@ function update() {
             leftRightMove('right');
         }
 
-        if (playerProps.checks.onGround) {
+        if (playerConf.checks.onGround) {
             jump();
         }
-        if (playerProps.checks.isClimbing) {
+        if (playerConf.checks.isClimbing) {
             player.setFlipY(false);
-            player.body.setVelocityY(playerProps.speeds.climbSpeed);
-            player.anims.play('player' + playerProps.anims.present + '_climb', true);
+            player.body.setVelocityY(playerConf.speeds.climbSpeed);
+            player.anims.play('player' + playerConf.anims.present + '_climb', true);
         }
     } else if (cursors.left.isDown) {
-        if (cursors.up.isDown && playerProps.checks.onGround) {
+        if (cursors.up.isDown && playerConf.checks.onGround) {
             jump();
         }
         leftRightMove('left');
     } else if (cursors.right.isDown) {
-        if (cursors.up.isDown && playerProps.checks.onGround) {
+        if (cursors.up.isDown && playerConf.checks.onGround) {
             jump();
         }
         leftRightMove('right');
     } else if (cursors.down.isDown) {
-        if (playerProps.checks.onGround) {
-            player.anims.play('player' + playerProps.anims.present + '_duck', true);
+        if (playerConf.checks.onGround) {
+            player.anims.play('player' + playerConf.anims.present + '_duck', true);
         }
-        if (playerProps.checks.isClimbing) {
+        if (playerConf.checks.isClimbing) {
             player.setFlipY(true);
-            player.body.setVelocityY(-playerProps.speeds.climbSpeed);
-            player.anims.play('player' + playerProps.anims.present + '_climb', true);
+            player.body.setVelocityY(-playerConf.speeds.climbSpeed);
+            player.anims.play('player' + playerConf.anims.present + '_climb', true);
         }
     } else {
-        playerProps.speeds.velocityX = 0;
+        playerConf.speeds.velocityX = 0;
 
-        if (playerProps.checks.onGround) {
-            player.anims.play('player' + playerProps.anims.present + '_idle', true);
-        } else if (playerProps.checks.isClimbing) {
-            player.anims.play('player' + playerProps.anims.present + '_climb');
+        if (playerConf.checks.onGround) {
+            player.anims.play('player' + playerConf.anims.present + '_idle', true);
+        } else if (playerConf.checks.isClimbing) {
+            player.anims.play('player' + playerConf.anims.present + '_climb');
         }
     }
 
-    playerProps.checks.isClimbing = false;
+    playerConf.checks.isClimbing = false;
 }
 
+/**
+ * function that is used when player jumps, sets x and y velocities properly changes animation to jumping one, plays
+ * jump sound
+ */
 function jump() {
-    player.body.setVelocityX(playerProps.speeds.velocityX);
-    player.body.setVelocityY(playerProps.speeds.jumpSpeed);
-    player.anims.play('player' + playerProps.anims.present + '_jump');
-    playerProps.checks.isJumping = true;
+    player.body.setVelocityX(playerConf.speeds.velocityX);
+    player.body.setVelocityY(playerConf.speeds.jumpSpeed);
+    player.anims.play('player' + playerConf.anims.present + '_jump');
+    playerConf.checks.isJumping = true;
     sounds.jumpSound.play();
 }
 
+/**
+ * function that is used when player is running, changes animation, flips character sprite depending on direction, sets
+ * proper velocity
+ * @param dir {string} - direction
+ */
 function leftRightMove(dir) {
     var dirs = {
         'left': {
             'flip': true,
-            'speed': -playerProps.speeds.speed
+            'speed': -playerConf.speeds.speed
         },
         'right': {
             'flip': false,
-            'speed': playerProps.speeds.speed
+            'speed': playerConf.speeds.speed
         }
     };
     player.setFlipX(dirs[dir]['flip']);
     player.body.setVelocityX(dirs[dir]['speed']);
-    playerProps.speeds.velocityX = dirs[dir]['speed'];
+    playerConf.speeds.velocityX = dirs[dir]['speed'];
 
-    if (playerProps.checks.onGround) {
-        player.anims.play('player' + playerProps.anims.present + '_run', true);
-    } else if (playerProps.checks.isClimbing) {
-        player.anims.play('player' + playerProps.anims.present + '_climb', true);
+    if (playerConf.checks.onGround) {
+        player.anims.play('player' + playerConf.anims.present + '_run', true);
+    } else if (playerConf.checks.isClimbing) {
+        player.anims.play('player' + playerConf.anims.present + '_climb', true);
     }
 }
 
+/**
+ * function that is called when player wins the game, puts winning text, adds keyboard key that restarts the game
+ * @param game {Phaser.Scene} - game context
+ */
 function win(game) {
     sounds.winSound.play();
 
@@ -733,6 +960,7 @@ function win(game) {
     });
 }
 
+//configuration of the game
 var config = {
     type: Phaser.AUTO,
     width: window.innerWidth,
@@ -741,9 +969,9 @@ var config = {
         default: 'arcade',
         arcade: {
             gravity: {
-                y: 250
+                y: gravity
             },
-            debug: true
+            debug: false
         }
     },
     scene: {
